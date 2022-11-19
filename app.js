@@ -58,26 +58,48 @@ const productSchema = mongoose.Schema({
       message: "status cant be {VALUE}"
     }
   },
-  supplier: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Supplier"
-  },
-  categories: [
-    {
-      name: {
-        type: String,
-        required: true
-      },
-      _id: mongoose.Schema.Types.ObjectId
-    }
-  ]
+  // supplier: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: "Supplier"
+  // },
+  // categories: [
+  //   {
+  //     name: {
+  //       type: String,
+  //       required: true
+  //     },
+  //     _id: mongoose.Schema.Types.ObjectId
+  //   }
+  // ]
 },
   { timestamps: true, }
 )
-
+//schema -> model -> queries
+const Product = mongoose.model('Product', productSchema)
 app.get("/", (req, res) => {
   res.send("Route is working! YaY!");
 });
-
+//posting to database
+app.post("/api/v1/product", async (req, res, next) => {
+  //save or create
+  try {
+    const product = new Product(req.body)
+    if (product.quantity == 0) {
+      product.status = "out-of-stock"
+    }
+    const result = await product.save()
+    res.status(200).json({
+      status: 'success',
+      message: 'data inserted successfully',
+      data: result
+    })
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      message: "data is not inserted",
+      error: error.message
+    })
+  }
+})
 
 module.exports = app;
